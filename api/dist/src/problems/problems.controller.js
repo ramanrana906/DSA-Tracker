@@ -23,14 +23,20 @@ let ProblemsController = class ProblemsController {
     create(createProblemDto) {
         return this.problemsService.create(createProblemDto);
     }
-    findAll(status, topic, pattern, difficulty, sourceList) {
-        return this.problemsService.findAll({ status, topic, pattern, difficulty, sourceList });
+    findAll(status, topic, pattern, difficulty, sourceList, tag, search) {
+        return this.problemsService.findAll({ status, topic, pattern, difficulty, sourceList, tag, search });
     }
     findDueForRevision() {
         return this.problemsService.findDueForRevision();
     }
+    listTags() {
+        return this.problemsService.listTags();
+    }
     findOne(id) {
         return this.problemsService.findOne(+id);
+    }
+    update(id, updateProblemDto) {
+        return this.problemsService.update(+id, updateProblemDto);
     }
     logAttempt(id, attemptData) {
         return this.problemsService.logAttempt(+id, attemptData);
@@ -54,8 +60,10 @@ __decorate([
     __param(2, (0, common_1.Query)('pattern')),
     __param(3, (0, common_1.Query)('difficulty')),
     __param(4, (0, common_1.Query)('sourceList')),
+    __param(5, (0, common_1.Query)('tag')),
+    __param(6, (0, common_1.Query)('search')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], ProblemsController.prototype, "findAll", null);
 __decorate([
@@ -65,12 +73,26 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], ProblemsController.prototype, "findDueForRevision", null);
 __decorate([
+    (0, common_1.Get)('tags'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], ProblemsController.prototype, "listTags", null);
+__decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], ProblemsController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Patch)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], ProblemsController.prototype, "update", null);
 __decorate([
     (0, common_1.Post)(':id/attempts'),
     __param(0, (0, common_1.Param)('id')),

@@ -86,7 +86,7 @@ export class AnalyticsService {
     const totalMistakes = mistakes.length;
     const mistakeCategories = Object.keys(mistakeCatMap)
       .map(cat => ({
-        name: cat.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        name: cat.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         category: cat,
         count: mistakeCatMap[cat],
         pct: totalMistakes === 0 ? 0 : Math.round((mistakeCatMap[cat] / totalMistakes) * 100),
@@ -114,9 +114,18 @@ export class AnalyticsService {
     });
     
     const activeDays = new Set<string>();
-    allAttempts.forEach(a => activeDays.add(new Date(a.date).toISOString().split('T')[0]));
-    allRevisions.forEach(r => activeDays.add(new Date(r.completedDate).toISOString().split('T')[0]));
-    
+    const dayCounts: Record<string, number> = {};
+    allAttempts.forEach(a => {
+      const key = new Date(a.date).toISOString().split('T')[0];
+      activeDays.add(key);
+      dayCounts[key] = (dayCounts[key] || 0) + 1;
+    });
+    allRevisions.forEach(r => {
+      const key = new Date(r.completedDate).toISOString().split('T')[0];
+      activeDays.add(key);
+      dayCounts[key] = (dayCounts[key] || 0) + 1;
+    });
+
     let streak = 0;
     const today = new Date();
     for (let i = 0; i < 365; i++) {
@@ -128,6 +137,16 @@ export class AnalyticsService {
       } else if (i > 0) {
         break; // streak broken
       }
+    }
+
+    // 8. Contribution heatmap (last 371 days, oldest first, so the UI can lay
+    // it out as a GitHub-style 53-week grid)
+    const heatmap: { date: string; count: number }[] = [];
+    for (let i = 370; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      heatmap.push({ date: key, count: dayCounts[key] || 0 });
     }
 
     return {
@@ -143,6 +162,7 @@ export class AnalyticsService {
       mistakeCategories,
       recentProblems,
       streak,
+      heatmap,
     };
   }
 }

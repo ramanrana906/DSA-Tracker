@@ -15,12 +15,13 @@ const problems_module_1 = require("./problems/problems.module");
 const concepts_module_1 = require("./concepts/concepts.module");
 const mistakes_module_1 = require("./mistakes/mistakes.module");
 const analytics_module_1 = require("./analytics/analytics.module");
+const users_module_1 = require("./users/users.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, problems_module_1.ProblemsModule, concepts_module_1.ConceptsModule, mistakes_module_1.MistakesModule, analytics_module_1.AnalyticsModule],
+        imports: [prisma_module_1.PrismaModule, problems_module_1.ProblemsModule, concepts_module_1.ConceptsModule, mistakes_module_1.MistakesModule, analytics_module_1.AnalyticsModule, users_module_1.UsersModule],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })

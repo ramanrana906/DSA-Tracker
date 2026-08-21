@@ -3,6 +3,13 @@ export declare class ProblemsController {
     private readonly problemsService;
     constructor(problemsService: ProblemsService);
     create(createProblemDto: any): Promise<{
+        tags: {
+            createdAt: Date;
+            id: number;
+            userId: number;
+            name: string;
+        }[];
+    } & {
         title: string;
         link: string | null;
         topic: string;
@@ -22,12 +29,21 @@ export declare class ProblemsController {
         masteredAt: Date | null;
         lastOutcome: string | null;
         triggerNote: string | null;
+        ease: number;
         createdAt: Date;
         updatedAt: Date;
         id: number;
         userId: number;
     }>;
-    findAll(status?: string, topic?: string, pattern?: string, difficulty?: string, sourceList?: string): Promise<{
+    findAll(status?: string, topic?: string, pattern?: string, difficulty?: string, sourceList?: string, tag?: string, search?: string): Promise<{
+        forgotCount: number;
+        isLeech: boolean;
+        tags: {
+            createdAt: Date;
+            id: number;
+            userId: number;
+            name: string;
+        }[];
         title: string;
         link: string | null;
         topic: string;
@@ -47,6 +63,7 @@ export declare class ProblemsController {
         masteredAt: Date | null;
         lastOutcome: string | null;
         triggerNote: string | null;
+        ease: number;
         createdAt: Date;
         updatedAt: Date;
         id: number;
@@ -72,39 +89,48 @@ export declare class ProblemsController {
         masteredAt: Date | null;
         lastOutcome: string | null;
         triggerNote: string | null;
+        ease: number;
         createdAt: Date;
         updatedAt: Date;
         id: number;
         userId: number;
     }[]>;
+    listTags(): Promise<{
+        createdAt: Date;
+        id: number;
+        userId: number;
+        name: string;
+    }[]>;
     findOne(id: string): Promise<{
+        forgotCount: number;
+        isLeech: boolean;
         attempts: {
             triggerNote: string | null;
             createdAt: Date;
             id: number;
-            date: Date;
             outcome: string;
-            timeTaken: number | null;
-            approach: string | null;
-            thoughts: string | null;
-            complexity: string | null;
-            code: string | null;
-            notes: string | null;
             problemId: number;
+            thoughts: string | null;
+            code: string | null;
+            approach: string | null;
+            date: Date;
+            timeTaken: number | null;
+            complexity: string | null;
+            notes: string | null;
         }[];
         revisionLogs: {
             id: number;
-            completedDate: Date;
             outcome: string;
-            approach: string | null;
-            thoughts: string | null;
-            code: string | null;
             problemId: number;
             scheduledDate: Date | null;
+            completedDate: Date;
             stageBefore: number;
             stageAfter: number;
             assessment: string | null;
             recallTime: number | null;
+            thoughts: string | null;
+            code: string | null;
+            approach: string | null;
             timeComplexity: string | null;
             spaceComplexity: string | null;
             complexityReason: string | null;
@@ -113,11 +139,49 @@ export declare class ProblemsController {
             createdAt: Date;
             id: number;
             userId: number;
-            date: Date;
             problemId: number;
+            date: Date;
             category: string;
             description: string;
             lesson: string | null;
+        }[];
+        tags: {
+            createdAt: Date;
+            id: number;
+            userId: number;
+            name: string;
+        }[];
+        title: string;
+        link: string | null;
+        topic: string;
+        pattern: string | null;
+        difficulty: string;
+        sourceList: string | null;
+        problemStatement: string | null;
+        exampleInput: string | null;
+        exampleOutput: string | null;
+        constraints: string | null;
+        solutionNotes: string | null;
+        status: string;
+        stage: number;
+        firstSolvedAt: Date | null;
+        nextRevisionDate: Date | null;
+        lastRevisionDate: Date | null;
+        masteredAt: Date | null;
+        lastOutcome: string | null;
+        triggerNote: string | null;
+        ease: number;
+        createdAt: Date;
+        updatedAt: Date;
+        id: number;
+        userId: number;
+    }>;
+    update(id: string, updateProblemDto: any): Promise<{
+        tags: {
+            createdAt: Date;
+            id: number;
+            userId: number;
+            name: string;
         }[];
     } & {
         title: string;
@@ -139,6 +203,7 @@ export declare class ProblemsController {
         masteredAt: Date | null;
         lastOutcome: string | null;
         triggerNote: string | null;
+        ease: number;
         createdAt: Date;
         updatedAt: Date;
         id: number;
@@ -174,6 +239,7 @@ export declare class ProblemsController {
         masteredAt: Date | null;
         lastOutcome: string | null;
         triggerNote: string | null;
+        ease: number;
         createdAt: Date;
         updatedAt: Date;
         id: number;
@@ -213,6 +279,7 @@ export declare class ProblemsController {
         masteredAt: Date | null;
         lastOutcome: string | null;
         triggerNote: string | null;
+        ease: number;
         createdAt: Date;
         updatedAt: Date;
         id: number;

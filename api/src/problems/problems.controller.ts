@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query } from '@nestjs/common';
 import { ProblemsService } from './problems.service';
 
 @Controller('problems')
@@ -17,8 +17,10 @@ export class ProblemsController {
     @Query('pattern') pattern?: string,
     @Query('difficulty') difficulty?: string,
     @Query('sourceList') sourceList?: string,
+    @Query('tag') tag?: string,
+    @Query('search') search?: string,
   ) {
-    return this.problemsService.findAll({ status, topic, pattern, difficulty, sourceList });
+    return this.problemsService.findAll({ status, topic, pattern, difficulty, sourceList, tag, search });
   }
 
   @Get('due')
@@ -26,9 +28,19 @@ export class ProblemsController {
     return this.problemsService.findDueForRevision();
   }
 
+  @Get('tags')
+  listTags() {
+    return this.problemsService.listTags();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.problemsService.findOne(+id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateProblemDto: any) {
+    return this.problemsService.update(+id, updateProblemDto);
   }
 
   @Post(':id/attempts')

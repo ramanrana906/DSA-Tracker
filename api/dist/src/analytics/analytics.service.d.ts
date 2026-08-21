@@ -50,11 +50,16 @@ export declare class AnalyticsService {
             masteredAt: Date | null;
             lastOutcome: string | null;
             triggerNote: string | null;
+            ease: number;
             createdAt: Date;
             updatedAt: Date;
             id: number;
             userId: number;
         }[];
         streak: number;
+        heatmap: {
+            date: string;
+            count: number;
+        }[];
     }>;
 }

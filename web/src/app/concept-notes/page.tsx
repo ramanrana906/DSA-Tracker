@@ -1,10 +1,44 @@
 import Link from 'next/link';
-import { Plus, Search, Edit2, Columns, Map, Link2, Key, Target, Binary, ListTree, GitBranch } from 'lucide-react';
+import { Search, Edit2, BookOpen } from 'lucide-react';
+import AddConceptButton from '@/components/AddConceptButton';
 
-export default function ConceptNotesPage() {
+type ConceptNote = {
+  id: number;
+  pattern: string;
+  topic: string;
+  coreIdea: string;
+  template?: string | null;
+  variations?: string | null;
+  pitfalls?: string | null;
+};
+
+type ProblemSummary = { id: number; title: string; pattern?: string | null; difficulty: string };
+
+async function getConcepts(): Promise<ConceptNote[]> {
+  const res = await fetch('http://127.0.0.1:3001/concepts', { cache: 'no-store' });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+async function getProblems(): Promise<ProblemSummary[]> {
+  const res = await fetch('http://127.0.0.1:3001/problems', { cache: 'no-store' });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+function listLines(value?: string | null) {
+  return (value || '').split('\n').map((line) => line.trim()).filter(Boolean);
+}
+
+export default async function ConceptNotesPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+  const { id } = await searchParams;
+  const [concepts, problems] = await Promise.all([getConcepts(), getProblems()]);
+  const selected = (id ? concepts.find((c) => String(c.id) === id) : concepts[0]) || null;
+  const relatedProblems = selected ? problems.filter((p) => p.pattern === selected.pattern) : [];
+
   return (
     <div style={{ padding: '0 0 2rem 0', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      
+
       <header className="main-header" style={{ padding: '0 0 1.5rem 0' }}>
         <div>
           <h1>Concept Notes</h1>
@@ -13,20 +47,18 @@ export default function ConceptNotesPage() {
         <div className="flex gap-4">
           <div style={{ position: 'relative' }}>
             <Search size={16} className="text-muted" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
-            <input 
-              type="text" 
-              placeholder="Search patterns or topics..." 
+            <input
+              type="text"
+              placeholder="Search patterns or topics..."
               style={{ width: '300px', padding: '0.6rem 1rem 0.6rem 2.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg-panel)' }}
             />
           </div>
-          <button className="btn-primary">
-            <Plus size={16} /> New Note
-          </button>
+          <AddConceptButton />
         </div>
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '2rem', flex: 1, alignItems: 'start' }}>
-        
+
         {/* LEFT COLUMN - Concept List */}
         <div className="panel" style={{ padding: '0' }}>
           <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-light)' }}>
@@ -35,124 +67,105 @@ export default function ConceptNotesPage() {
               <option>All Topics</option>
             </select>
           </div>
-          
+
           <div className="flex flex-col text-sm">
-            <Link href="#" className="flex items-center gap-3" style={{ padding: '1rem 1.5rem', background: 'var(--bg-panel-hover)', color: 'var(--primary)', fontWeight: 500, borderLeft: '3px solid var(--primary)' }}>
-              <Columns size={16} /> Two Pointers
-            </Link>
-            <Link href="#" className="flex items-center gap-3 text-muted hover:bg-slate-50" style={{ padding: '1rem 1.5rem' }}>
-              <Map size={16} /> Sliding Window
-            </Link>
-            <Link href="#" className="flex items-center gap-3 text-muted hover:bg-slate-50" style={{ padding: '1rem 1.5rem' }}>
-              <Key size={16} /> Hashing
-            </Link>
-            <Link href="#" className="flex items-center gap-3 text-muted hover:bg-slate-50" style={{ padding: '1rem 1.5rem' }}>
-              <ListTree size={16} /> Stack
-            </Link>
-            <Link href="#" className="flex items-center gap-3 text-muted hover:bg-slate-50" style={{ padding: '1rem 1.5rem' }}>
-              <Target size={16} /> Binary Search
-            </Link>
-            <Link href="#" className="flex items-center gap-3 text-muted hover:bg-slate-50" style={{ padding: '1rem 1.5rem' }}>
-              <Binary size={16} /> Dynamic Programming
-            </Link>
-            <Link href="#" className="flex items-center gap-3 text-muted hover:bg-slate-50" style={{ padding: '1rem 1.5rem' }}>
-              <GitBranch size={16} /> Tree
-            </Link>
-            <Link href="#" className="flex items-center gap-3 text-muted hover:bg-slate-50" style={{ padding: '1rem 1.5rem' }}>
-              <Link2 size={16} /> Graph
-            </Link>
+            {concepts.length === 0 && (
+              <p className="text-muted text-sm" style={{ padding: '1.5rem' }}>No concept notes yet.</p>
+            )}
+            {concepts.map((c) => (
+              <Link
+                key={c.id}
+                href={`/concept-notes?id=${c.id}`}
+                className="flex items-center gap-3"
+                style={selected?.id === c.id
+                  ? { padding: '1rem 1.5rem', background: 'var(--bg-panel-hover)', color: 'var(--primary)', fontWeight: 500, borderLeft: '3px solid var(--primary)' }
+                  : { padding: '1rem 1.5rem', color: 'var(--text-muted)', borderLeft: '3px solid transparent' }}
+              >
+                <BookOpen size={16} /> {c.pattern}
+              </Link>
+            ))}
           </div>
         </div>
 
         {/* RIGHT COLUMN - Concept Viewer */}
         <div className="panel" style={{ padding: '2rem' }}>
-          
-          <div className="flex justify-between items-center" style={{ marginBottom: '2rem' }}>
-            <h2 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              Two Pointers <Edit2 size={18} className="text-muted cursor-pointer hover:text-primary" />
-            </h2>
-          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '3rem' }}>
-            
-            {/* Main Content */}
-            <div className="flex flex-col gap-6">
-              
-              <div>
-                <h3 style={{ marginBottom: '0.75rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>Core Idea</h3>
-                <p className="text-sm" style={{ lineHeight: 1.6 }}>
-                  Use two pointers to traverse a data structure from two different directions or with different speeds to solve problems efficiently.
-                </p>
-              </div>
-
-              <div>
-                <h3 style={{ marginBottom: '0.75rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>Template / Pseudocode</h3>
-                <div style={{ background: '#1e1e1e', color: '#d4d4d4', padding: '1.5rem', borderRadius: 'var(--radius-md)', fontSize: '0.875rem', fontFamily: 'monospace', lineHeight: 1.5 }}>
-                  <div style={{ color: '#569cd6' }}>left <span style={{ color: '#d4d4d4' }}>=</span> <span style={{ color: '#b5cea8' }}>0</span></div>
-                  <div style={{ color: '#569cd6' }}>right <span style={{ color: '#d4d4d4' }}>= n -</span> <span style={{ color: '#b5cea8' }}>1</span></div>
-                  <br />
-                  <div style={{ color: '#c586c0' }}>while <span style={{ color: '#d4d4d4' }}>left &lt; right:</span></div>
-                  <div style={{ paddingLeft: '1.5rem', color: '#6a9955' }}># do something</div>
-                  <div style={{ paddingLeft: '1.5rem', color: '#c586c0' }}>if <span style={{ color: '#d4d4d4' }}>condition:</span></div>
-                  <div style={{ paddingLeft: '3rem', color: '#6a9955' }}># do something else</div>
-                  <div style={{ paddingLeft: '3rem', color: '#9cdcfe' }}>right <span style={{ color: '#d4d4d4' }}>-=</span> <span style={{ color: '#b5cea8' }}>1</span></div>
-                  <div style={{ paddingLeft: '1.5rem', color: '#c586c0' }}>elif <span style={{ color: '#d4d4d4' }}>condition:</span></div>
-                  <div style={{ paddingLeft: '3rem', color: '#6a9955' }}># met target / move both</div>
-                  <div style={{ paddingLeft: '3rem', color: '#9cdcfe' }}>left <span style={{ color: '#d4d4d4' }}>+=</span> <span style={{ color: '#b5cea8' }}>1</span></div>
-                  <div style={{ paddingLeft: '3rem', color: '#9cdcfe' }}>right <span style={{ color: '#d4d4d4' }}>-=</span> <span style={{ color: '#b5cea8' }}>1</span></div>
-                  <div style={{ paddingLeft: '1.5rem', color: '#c586c0' }}>else<span style={{ color: '#d4d4d4' }}>:</span></div>
-                  <div style={{ paddingLeft: '3rem', color: '#9cdcfe' }}>left <span style={{ color: '#d4d4d4' }}>+=</span> <span style={{ color: '#b5cea8' }}>1</span></div>
-                </div>
-              </div>
-
+          {!selected ? (
+            <div className="flex flex-col items-center justify-center text-center" style={{ padding: '3rem 0' }}>
+              <BookOpen size={28} className="text-muted" style={{ marginBottom: '1rem' }} />
+              <h3 style={{ marginBottom: '0.5rem' }}>No concept notes yet</h3>
+              <p className="text-sm text-muted" style={{ maxWidth: '360px' }}>Capture the core idea, template, and pitfalls for a pattern so future revisions are self-contained.</p>
             </div>
-
-            {/* Sidebar Content */}
-            <div className="flex flex-col gap-6">
-              
-              <div>
-                <h3 style={{ marginBottom: '0.75rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>Common Variations</h3>
-                <ul className="text-sm flex flex-col gap-2" style={{ paddingLeft: '1rem', listStyleType: 'disc' }}>
-                  <li>Pair sum problems</li>
-                  <li>Palindrome check</li>
-                  <li>Container with Most Water</li>
-                  <li>Removing duplicates</li>
-                  <li>Partition problems</li>
-                </ul>
+          ) : (
+            <>
+              <div className="flex justify-between items-center" style={{ marginBottom: '2rem' }}>
+                <h2 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  {selected.pattern} <Edit2 size={18} className="text-muted cursor-pointer hover:text-primary" />
+                </h2>
+                <span className="badge">{selected.topic}</span>
               </div>
 
-              <div>
-                <h3 style={{ marginBottom: '0.75rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>Common Pitfalls</h3>
-                <ul className="text-sm flex flex-col gap-2" style={{ paddingLeft: '1rem', listStyleType: 'disc' }}>
-                  <li>Moving wrong pointer</li>
-                  <li>Skipping duplicates</li>
-                  <li>Off-by-one errors</li>
-                  <li>Infinite loop (no pointer move)</li>
-                </ul>
-              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '3rem' }}>
 
-              <div>
-                <h3 style={{ marginBottom: '0.75rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>Problems Using This Pattern</h3>
-                <div className="flex flex-col gap-3">
-                  <div className="flex justify-between items-center text-sm">
-                    <Link href="#" className="hover:underline">1. Two Sum II - Input Array Is Sorted</Link>
-                    <span className="badge success">Easy</span>
+                {/* Main Content */}
+                <div className="flex flex-col gap-6">
+
+                  <div>
+                    <h3 style={{ marginBottom: '0.75rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>Core Idea</h3>
+                    <p className="text-sm" style={{ lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{selected.coreIdea}</p>
                   </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <Link href="#" className="hover:underline">2. 3Sum</Link>
-                    <span className="badge warning">Medium</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <Link href="#" className="hover:underline">3. Container With Most Water</Link>
-                    <span className="badge warning">Medium</span>
-                  </div>
-                  <Link href="#" className="text-xs mt-2" style={{ color: 'var(--info)' }}>View all (18)</Link>
+
+                  {selected.template && (
+                    <div>
+                      <h3 style={{ marginBottom: '0.75rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>Template / Pseudocode</h3>
+                      <pre style={{ background: '#1e1e1e', color: '#d4d4d4', padding: '1.5rem', borderRadius: 'var(--radius-md)', fontSize: '0.875rem', fontFamily: 'monospace', lineHeight: 1.5, whiteSpace: 'pre-wrap', overflowX: 'auto' }}>{selected.template}</pre>
+                    </div>
+                  )}
+
                 </div>
+
+                {/* Sidebar Content */}
+                <div className="flex flex-col gap-6">
+
+                  {listLines(selected.variations).length > 0 && (
+                    <div>
+                      <h3 style={{ marginBottom: '0.75rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>Common Variations</h3>
+                      <ul className="text-sm flex flex-col gap-2" style={{ paddingLeft: '1rem', listStyleType: 'disc' }}>
+                        {listLines(selected.variations).map((line, i) => <li key={i}>{line}</li>)}
+                      </ul>
+                    </div>
+                  )}
+
+                  {listLines(selected.pitfalls).length > 0 && (
+                    <div>
+                      <h3 style={{ marginBottom: '0.75rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>Common Pitfalls</h3>
+                      <ul className="text-sm flex flex-col gap-2" style={{ paddingLeft: '1rem', listStyleType: 'disc' }}>
+                        {listLines(selected.pitfalls).map((line, i) => <li key={i}>{line}</li>)}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div>
+                    <h3 style={{ marginBottom: '0.75rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>Problems Using This Pattern</h3>
+                    {relatedProblems.length === 0 ? (
+                      <p className="text-sm text-muted">No problems tagged with this pattern yet.</p>
+                    ) : (
+                      <div className="flex flex-col gap-3">
+                        {relatedProblems.map((p, i) => (
+                          <div key={p.id} className="flex justify-between items-center text-sm">
+                            <Link href={`/problems/${p.id}`} className="hover:underline">{i + 1}. {p.title}</Link>
+                            <span className={`badge ${p.difficulty === 'Easy' ? 'success' : p.difficulty === 'Medium' ? 'warning' : 'danger'}`}>{p.difficulty}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+
               </div>
-
-            </div>
-
-          </div>
+            </>
+          )}
         </div>
 
       </div>

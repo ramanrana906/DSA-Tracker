@@ -6,8 +6,8 @@ export declare class MistakesController {
         createdAt: Date;
         id: number;
         userId: number;
-        date: Date;
         problemId: number;
+        date: Date;
         category: string;
         description: string;
         lesson: string | null;
@@ -20,8 +20,8 @@ export declare class MistakesController {
         createdAt: Date;
         id: number;
         userId: number;
-        date: Date;
         problemId: number;
+        date: Date;
         category: string;
         description: string;
         lesson: string | null;
@@ -34,8 +34,8 @@ export declare class MistakesController {
         createdAt: Date;
         id: number;
         userId: number;
-        date: Date;
         problemId: number;
+        date: Date;
         category: string;
         description: string;
         lesson: string | null;
@@ -44,8 +44,8 @@ export declare class MistakesController {
         createdAt: Date;
         id: number;
         userId: number;
-        date: Date;
         problemId: number;
+        date: Date;
         category: string;
         description: string;
         lesson: string | null;

@@ -110,7 +110,7 @@ export default function LogAttemptForm({ problem }: { problem: LegacyProblem }) 
         <div className="flex justify-between items-center" style={{ paddingBottom: '1rem', borderBottom: '1px solid var(--border-light)' }}>
           <span className="text-muted">Next Revision</span>
           <span className="font-medium text-right">
-            {problem.nextRevisionDate ? new Date(problem.nextRevisionDate).toLocaleDateString() : '—'}
+            {problem.nextRevisionDate ? new Date(problem.nextRevisionDate).toLocaleDateString('en-US') : '—'}
           </span>
         </div>
         

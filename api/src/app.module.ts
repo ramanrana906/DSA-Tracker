@@ -6,9 +6,10 @@ import { ProblemsModule } from './problems/problems.module';
 import { ConceptsModule } from './concepts/concepts.module';
 import { MistakesModule } from './mistakes/mistakes.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [PrismaModule, ProblemsModule, ConceptsModule, MistakesModule, AnalyticsModule],
+  imports: [PrismaModule, ProblemsModule, ConceptsModule, MistakesModule, AnalyticsModule, UsersModule],
   controllers: [AppController],
   providers: [AppService],
 })

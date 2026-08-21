@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ExternalLink, AlertTriangle } from 'lucide-react';
 import AttemptWorkspace from './AttemptWorkspace';
 
 type ProblemAttempt = {
@@ -44,6 +44,10 @@ type ProblemDetail = {
   constraints?: string | null;
   solutionNotes?: string | null;
   triggerNote?: string | null;
+  ease?: number;
+  isLeech?: boolean;
+  forgotCount?: number;
+  tags?: { id: number; name: string }[];
   attempts?: ProblemAttempt[];
   revisionLogs?: ProblemRevision[];
   mistakeEntries?: { id: number; date: string; category: string; description: string }[];
@@ -71,6 +75,18 @@ export default async function ProblemDetail({ params }: { params: Promise<{ id: 
         <ArrowLeft size={16} /> Back to Inventory
       </Link>
 
+      {problem.isLeech && (
+        <div className="leech-banner">
+          <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '0.1rem', color: 'var(--warning)' }} />
+          <div>
+            <strong>This one keeps slipping.</strong>
+            <p className="text-sm" style={{ marginTop: '0.2rem' }}>
+              {problem.forgotCount} failed recall{problem.forgotCount === 1 ? '' : 's'} so far. Before the next attempt, review the solution notes or the linked concept note instead of just retrying cold.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Problem Header */}
       <div className="panel" style={{ padding: '1.5rem 2rem', marginBottom: '1.5rem' }}>
         <div className="flex justify-between items-start">
@@ -88,6 +104,7 @@ export default async function ProblemDetail({ params }: { params: Promise<{ id: 
               {problem.pattern && <span className="badge">{problem.pattern}</span>}
               <span className={`badge ${problem.difficulty === 'Easy' ? 'success' : problem.difficulty === 'Medium' ? 'warning' : 'danger'}`}>{problem.difficulty}</span>
               {problem.sourceList && <span className="badge">{problem.sourceList}</span>}
+              {problem.tags?.map((tag) => <span key={tag.id} className="tag-chip">{tag.name}</span>)}
             </div>
           </div>
             <div className="flex gap-3 items-center">
@@ -104,13 +121,13 @@ export default async function ProblemDetail({ params }: { params: Promise<{ id: 
               {problem.lastRevisionDate && (
                 <div className="flex flex-col items-end gap-1">
                   <span className="text-xs text-muted">Last Revision</span>
-                  <span className="font-medium text-sm">{new Date(problem.lastRevisionDate).toLocaleDateString()}</span>
+                  <span className="font-medium text-sm">{new Date(problem.lastRevisionDate).toLocaleDateString('en-US')}</span>
                 </div>
               )}
             {problem.nextRevisionDate && (
               <div className="flex flex-col items-end gap-1">
                 <span className="text-xs text-muted">Next Revision</span>
-                <span className="font-medium text-sm">{new Date(problem.nextRevisionDate).toLocaleDateString()}</span>
+                <span className="font-medium text-sm">{new Date(problem.nextRevisionDate).toLocaleDateString('en-US')}</span>
               </div>
             )}
           </div>
@@ -149,7 +166,7 @@ export default async function ProblemDetail({ params }: { params: Promise<{ id: 
                       <div className={`sr-stage ${stage.complete ? 'complete' : ''} ${isCurrent ? 'current' : ''} ${isFailed ? 'failed' : ''}`} key={stage.label}>
                         <div className="sr-stage-label">{stage.label}</div>
                         <div className="sr-stage-dot">{stage.complete ? '✓' : isFailed ? '!' : ''}</div>
-                        <div className="sr-stage-date">{displayDate ? new Date(displayDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : isCurrent && index === 0 ? 'Start here' : isCurrent ? 'Not scheduled' : 'After success'}</div>
+                        <div className="sr-stage-date">{displayDate ? new Date(displayDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : isCurrent && index === 0 ? 'Start here' : isCurrent ? 'Not scheduled' : 'After success'}</div>
                       </div>
                     );
                   })}

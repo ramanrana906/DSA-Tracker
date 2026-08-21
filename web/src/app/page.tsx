@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Calendar, Hourglass, ClipboardList, CheckCircle, Target, Flame, RefreshCw, AlertTriangle, ArrowRight, BookOpen, List } from 'lucide-react';
 import AddProblemButton from '@/components/AddProblemButton';
+import ContributionHeatmap from '@/components/ContributionHeatmap';
 
 type DashboardProblem = { id: number; title: string; difficulty: string; stage: number; nextRevisionDate?: string | null };
 type ProgressRow = { topic?: string; pattern?: string; total: number; solved: number; mastery: number; avgAttempts: string };
@@ -11,20 +12,23 @@ type DashboardAnalytics = {
   mistakeCategories: { name: string; pct: number }[];
   recentProblems: DashboardProblem[];
   streak: number;
+  heatmap: { date: string; count: number }[];
 };
 
 async function getDashboardData() {
-  const [dueRes, analyticsRes, allProblemsRes] = await Promise.all([
+  const [dueRes, analyticsRes, allProblemsRes, userRes] = await Promise.all([
     fetch('http://127.0.0.1:3001/problems/due', { cache: 'no-store' }),
     fetch('http://127.0.0.1:3001/analytics', { cache: 'no-store' }),
     fetch('http://127.0.0.1:3001/problems', { cache: 'no-store' }),
+    fetch('http://127.0.0.1:3001/user', { cache: 'no-store' }),
   ]);
-  
+
   const dueProblems = dueRes.ok ? await dueRes.json() as DashboardProblem[] : [];
   const analytics = analyticsRes.ok ? await analyticsRes.json() as DashboardAnalytics : null;
   const allProblems = allProblemsRes.ok ? await allProblemsRes.json() as DashboardProblem[] : [];
-  
-  return { dueProblems, analytics, allProblems };
+  const user = userRes.ok ? await userRes.json() as { name: string } : null;
+
+  return { dueProblems, analytics, allProblems, userName: user?.name || 'there' };
 }
 
 function getGreeting() {
@@ -39,19 +43,20 @@ function getFormattedDate() {
 }
 
 export default async function Dashboard() {
-  const { dueProblems, analytics, allProblems } = await getDashboardData();
+  const { dueProblems, analytics, allProblems, userName } = await getDashboardData();
   const kpi = analytics?.kpi || { totalProblems: 0, solvedProblems: 0, masteryPercent: 0, revisionsCompleted: 0, avgAttempts: 0 };
   const topicProgress = analytics?.topicProgress || [];
   const patternProgress = analytics?.patternProgress || [];
   const mistakeCategories = analytics?.mistakeCategories || [];
   const recentProblems = analytics?.recentProblems || [];
   const streak = analytics?.streak || 0;
+  const heatmap = analytics?.heatmap || [];
 
   return (
     <>
       <header className="main-header">
         <div>
-          <h1>{getGreeting()}, Raman 👋</h1>
+          <h1>{getGreeting()}, {userName} 👋</h1>
           <p className="text-muted text-sm">Keep solving, keep growing.</p>
         </div>
         <div className="flex items-center gap-4">
@@ -119,6 +124,8 @@ export default async function Dashboard() {
           </div>
         </div>
 
+        <ContributionHeatmap days={heatmap} />
+
         {/* MIDDLE SECTION */}
         <div className="dashboard-grid">
           
@@ -148,7 +155,7 @@ export default async function Dashboard() {
                       <Link href={`/problems/${p.id}`} key={p.id} className="flex justify-between items-center text-sm" style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--border-light)' }}>
                         <div className="flex gap-4">
                           <span className="text-muted">{i + 1}.</span>
-                          <div><span>{p.title}</span><div className="text-xs text-muted" style={{ marginTop: '0.15rem' }}>Revision {p.stage + 1} / 4 · {p.nextRevisionDate ? new Date(p.nextRevisionDate).toLocaleDateString() : 'Due'}</div></div>
+                          <div><span>{p.title}</span><div className="text-xs text-muted" style={{ marginTop: '0.15rem' }}>Revision {p.stage + 1} / 4 · {p.nextRevisionDate ? new Date(p.nextRevisionDate).toLocaleDateString('en-US') : 'Due'}</div></div>
                         </div>
                         <span className={`badge ${p.difficulty === 'Easy' ? 'success' : p.difficulty === 'Medium' ? 'warning' : 'danger'}`}>
                           {p.difficulty}

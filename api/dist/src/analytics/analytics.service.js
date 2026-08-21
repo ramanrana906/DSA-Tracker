@@ -87,7 +87,7 @@ let AnalyticsService = class AnalyticsService {
         const totalMistakes = mistakes.length;
         const mistakeCategories = Object.keys(mistakeCatMap)
             .map(cat => ({
-            name: cat.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            name: cat.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
             category: cat,
             count: mistakeCatMap[cat],
             pct: totalMistakes === 0 ? 0 : Math.round((mistakeCatMap[cat] / totalMistakes) * 100),
@@ -110,8 +110,17 @@ let AnalyticsService = class AnalyticsService {
             select: { completedDate: true },
         });
         const activeDays = new Set();
-        allAttempts.forEach(a => activeDays.add(new Date(a.date).toISOString().split('T')[0]));
-        allRevisions.forEach(r => activeDays.add(new Date(r.completedDate).toISOString().split('T')[0]));
+        const dayCounts = {};
+        allAttempts.forEach(a => {
+            const key = new Date(a.date).toISOString().split('T')[0];
+            activeDays.add(key);
+            dayCounts[key] = (dayCounts[key] || 0) + 1;
+        });
+        allRevisions.forEach(r => {
+            const key = new Date(r.completedDate).toISOString().split('T')[0];
+            activeDays.add(key);
+            dayCounts[key] = (dayCounts[key] || 0) + 1;
+        });
         let streak = 0;
         const today = new Date();
         for (let i = 0; i < 365; i++) {
@@ -124,6 +133,13 @@ let AnalyticsService = class AnalyticsService {
             else if (i > 0) {
                 break;
             }
+        }
+        const heatmap = [];
+        for (let i = 370; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(d.getDate() - i);
+            const key = d.toISOString().split('T')[0];
+            heatmap.push({ date: key, count: dayCounts[key] || 0 });
         }
         return {
             kpi: {
@@ -138,6 +154,7 @@ let AnalyticsService = class AnalyticsService {
             mistakeCategories,
             recentProblems,
             streak,
+            heatmap,
         };
     }
 };

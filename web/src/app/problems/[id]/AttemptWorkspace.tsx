@@ -60,6 +60,7 @@ type Problem = {
   masteredAt?: string | null;
   link?: string | null;
   solutionNotes?: string | null;
+  ease?: number;
   attempts?: Attempt[];
   revisionLogs?: RevisionLog[];
   mistakeEntries?: MistakeEntry[];
@@ -109,7 +110,7 @@ function relativeDate(value?: string | null) {
   if (days === 0) return 'Today';
   if (days === 1) return 'Yesterday';
   if (days === -1) return 'Tomorrow';
-  return date.toLocaleDateString();
+  return date.toLocaleDateString('en-US');
 }
 
 function reviewTiming(value?: string | null) {
@@ -122,7 +123,7 @@ function reviewTiming(value?: string | null) {
   if (days < 0) return 'Overdue';
   if (days === 0) return 'Due Today';
   if (days === 1) return 'Due Tomorrow';
-  return `Upcoming · ${date.toLocaleDateString()}`;
+  return `Upcoming · ${date.toLocaleDateString('en-US')}`;
 }
 
 function humanizeOutcome(outcome?: string | null) {
@@ -359,7 +360,7 @@ export default function AttemptWorkspace({ problem }: { problem: Problem }) {
               {completion.revisionNumber === 0 && <div><span>Time Complexity</span><p className="text-sm" style={{ fontWeight: 700 }}>{timeComplexity || 'Not recorded'}</p></div>}
               {completion.revisionNumber === 0 && <div><span>Space Complexity</span><p className="text-sm" style={{ fontWeight: 700 }}>{spaceComplexity || 'Not recorded'}</p></div>}
               <div><span>Mistakes</span><p className="text-sm" style={{ fontWeight: 700 }}>{completion.mistakeCount}</p></div>
-              {completion.kind !== 'MASTERED' && <div><span>Next Revision</span><p className="text-sm" style={{ fontWeight: 700 }}>{completion.nextReview ? `${relativeDate(completion.nextReview)} · ${new Date(completion.nextReview).toLocaleDateString()}${completion.revisionNumber > 0 ? ` · Revision ${completion.revisionNumber + 1}` : ''}` : 'Schedule pending'}</p></div>}
+              {completion.kind !== 'MASTERED' && <div><span>Next Revision</span><p className="text-sm" style={{ fontWeight: 700 }}>{completion.nextReview ? `${relativeDate(completion.nextReview)} · ${new Date(completion.nextReview).toLocaleDateString('en-US')}${completion.revisionNumber > 0 ? ` · Revision ${completion.revisionNumber + 1}` : ''}` : 'Schedule pending'}</p></div>}
             </div>
             {previousBest !== null && completion.recallTime < previousBest && <p className="text-sm" style={{ color: 'var(--success)', marginTop: '1rem', fontWeight: 600 }}>{Math.round(((previousBest - completion.recallTime) / previousBest) * 100)}% faster than your previous best ({formatTime(previousBest)}).</p>}
             <div className="flex gap-3 flex-wrap" style={{ marginTop: '1.5rem' }}>
@@ -371,7 +372,7 @@ export default function AttemptWorkspace({ problem }: { problem: Problem }) {
           <section className="panel" style={{ padding: '2.5rem 2rem', textAlign: 'center' }}>
             <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: isMastered ? 'var(--success-bg)' : 'var(--primary-bg)', color: isMastered ? 'var(--success)' : 'var(--primary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>{isMastered ? <CheckCircle size={25} /> : <Brain size={25} />}</div>
             <p className="text-xs" style={{ color: isMastered ? 'var(--success)' : 'var(--primary)', fontWeight: 800, letterSpacing: '0.08em', marginBottom: '0.45rem' }}>{isMastered ? 'MASTERED' : isRevision ? `REVISION ${currentRevision}` : 'FIRST ATTEMPT'}</p>
-            <h2 style={{ fontSize: '1.2rem' }}>{isMastered ? 'This problem has completed its revision lifecycle.' : isRevision ? `${reviewTiming(problem.nextRevisionDate)}${problem.nextRevisionDate ? ` · ${new Date(problem.nextRevisionDate).toLocaleDateString()}` : ''}` : 'Solve this problem from scratch.'}</h2>
+            <h2 style={{ fontSize: '1.2rem' }}>{isMastered ? 'This problem has completed its revision lifecycle.' : isRevision ? `${reviewTiming(problem.nextRevisionDate)}${problem.nextRevisionDate ? ` · ${new Date(problem.nextRevisionDate).toLocaleDateString('en-US')}` : ''}` : 'Solve this problem from scratch.'}</h2>
             <p className="text-sm text-muted" style={{ maxWidth: '440px', margin: '0.6rem auto 1.25rem', lineHeight: 1.6 }}>{isMastered ? 'It remains available here and in the Mastered inventory.' : isRevision ? isRevisionDue ? 'Try to solve this problem again without looking at your previous solution.' : `Revision ${currentRevision} will become available on its scheduled date.` : 'Read the problem, derive the pattern, implement it, and explain the complexity.'}</p>
             {!isMastered && (!isRevision ? <button className="btn-primary" onClick={startAttempt}><Play size={16} /> Start First Attempt</button> : isRevisionDue ? <button className="btn-primary" onClick={startAttempt}><Play size={16} /> Attempt Revision {currentRevision}</button> : null)}
           </section>
@@ -433,19 +434,25 @@ export default function AttemptWorkspace({ problem }: { problem: Problem }) {
           <h2 style={{ fontSize: '1.1rem', marginTop: '0.25rem' }}>{isMastered ? 'Mastered' : hasFirstSolve ? `Revision ${currentRevision} of 4` : 'First Solve'}</h2>
           <div className="context-list">
             <div><span>Status</span><p style={{ color: isMastered ? 'var(--success)' : problem.status === 'DUE' ? 'var(--danger)' : 'var(--text-main)', fontWeight: 700 }}>{isMastered ? 'Mastered' : reviewTiming(problem.nextRevisionDate)}</p></div>
-            <div><span>Last successful revision</span><p>{latestSuccessfulRevision ? new Date(latestSuccessfulRevision.completedDate).toLocaleDateString() : 'None yet'}</p></div>
-            <div><span>Last attempt</span><p>{latestHistory ? `${new Date(latestHistory.date).toLocaleDateString()} · ${latestHistory.outcome}` : 'Not recorded'}</p></div>
+            <div><span>Last successful revision</span><p>{latestSuccessfulRevision ? new Date(latestSuccessfulRevision.completedDate).toLocaleDateString('en-US') : 'None yet'}</p></div>
+            <div><span>Last attempt</span><p>{latestHistory ? `${new Date(latestHistory.date).toLocaleDateString('en-US')} · ${latestHistory.outcome}` : 'Not recorded'}</p></div>
             <div><span>Last approach</span><p>{latestRevision?.approach || latestAttempt?.approach || problem.pattern || problem.triggerNote || 'Not recorded'}</p></div>
             <div><span>Last mistake</span><p>{latestMistake?.description || 'No mistake recorded yet'}</p></div>
-            <div><span>Next review</span><p>{latestRevision?.outcome === 'FORGOT' ? 'Pending successful recall' : problem.nextRevisionDate ? `${relativeDate(problem.nextRevisionDate)} · ${new Date(problem.nextRevisionDate).toLocaleDateString()}` : isMastered ? 'Lifecycle complete' : 'Not scheduled'}</p></div>
+            <div><span>Next review</span><p>{latestRevision?.outcome === 'FORGOT' ? 'Pending successful recall' : problem.nextRevisionDate ? `${relativeDate(problem.nextRevisionDate)} · ${new Date(problem.nextRevisionDate).toLocaleDateString('en-US')}` : isMastered ? 'Lifecycle complete' : 'Not scheduled'}</p></div>
           </div>
           <div className="context-stats">
             <div><span>Attempts</span><strong>{historyItems.length}</strong></div>
             <div><span>Previous best</span><strong>{previousBest === null ? '—' : formatTime(previousBest)}</strong></div>
+            {hasFirstSolve && typeof problem.ease === 'number' && (
+              <div>
+                <span>Recall pace</span>
+                <strong>{problem.ease >= 1.1 ? 'Stretching out' : problem.ease <= 0.9 ? 'Tightening up' : 'Standard'} ({problem.ease.toFixed(2)}×)</strong>
+              </div>
+            )}
           </div>
           <div style={{ borderTop: '1px solid var(--border-light)', marginTop: '1.25rem', paddingTop: '1.25rem' }}>
             <div className="flex items-center justify-between"><h3 className="text-sm">Attempt History</h3><span className="text-xs text-muted">{historyItems.length} total</span></div>
-            {historyItems.length === 0 ? <p className="text-sm text-muted" style={{ marginTop: '0.75rem' }}>No attempts recorded yet.</p> : <div className="history-list">{historyItems.slice(0, 6).map((item) => { const expanded = expandedAttempt === item.id; return <div key={item.id} className="history-item"><button type="button" onClick={() => setExpandedAttempt(expanded ? null : item.id)}><span><strong>{item.title}</strong><small>{new Date(item.date).toLocaleDateString()}{item.time ? ` · ${formatTime(item.time)}` : ''}</small></span><span className={`badge ${item.successful ? 'success' : 'warning'}`}>{item.outcome} {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span></button>{expanded && <div className="history-detail">{item.thoughts && <p><strong>Recall:</strong> {item.thoughts}</p>}{item.code && <pre>{item.code}</pre>}</div>}</div>; })}</div>}
+            {historyItems.length === 0 ? <p className="text-sm text-muted" style={{ marginTop: '0.75rem' }}>No attempts recorded yet.</p> : <div className="history-list">{historyItems.slice(0, 6).map((item) => { const expanded = expandedAttempt === item.id; return <div key={item.id} className="history-item"><button type="button" onClick={() => setExpandedAttempt(expanded ? null : item.id)}><span><strong>{item.title}</strong><small>{new Date(item.date).toLocaleDateString('en-US')}{item.time ? ` · ${formatTime(item.time)}` : ''}</small></span><span className={`badge ${item.successful ? 'success' : 'warning'}`}>{item.outcome} {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span></button>{expanded && <div className="history-detail">{item.thoughts && <p><strong>Recall:</strong> {item.thoughts}</p>}{item.code && <pre>{item.code}</pre>}</div>}</div>; })}</div>}
           </div>
         </section>
       </aside>
